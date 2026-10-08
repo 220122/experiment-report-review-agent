@@ -51,6 +51,8 @@ from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 
 import streamlit as st
 
+from samples import SAMPLES, count_by_kind, get_sample, kind_label
+
 # ---------------------------------------------------------------------------
 # 全局常量：分制、模型、默认参数
 # ---------------------------------------------------------------------------
@@ -1233,68 +1235,17 @@ def build_full_markdown(result: Dict[str, Any], standard: str, report: str) -> s
 
 
 # ===========================================================================
-# 第七部分：示例数据（一键填充，方便试用）
+# 第七部分：示例库（来自同目录 samples.py，共 6 套，可下拉切换）
 # ===========================================================================
-
-SAMPLE_STANDARD = """【实验名称】用分光光度法测定水中微量铁的含量
-【实验目的】
-1. 掌握邻二氮菲分光光度法测定微量铁的原理与方法；
-2. 学会使用分光光度计并进行数据处理，绘制标准曲线。
-【实验原理】
-在 pH 3~9 的溶液中，Fe2+ 与邻二氮菲生成稳定的橙红色配合物，最大吸收波长 510 nm，
-摩尔吸光系数约 1.1×10^4 L·mol-1·cm-1。用盐酸羟胺将 Fe3+ 还原为 Fe2+，依据朗伯-比尔定律
-A = εbc 进行定量测定。
-【仪器与试剂】
-721 型分光光度计、50 mL 容量瓶、移液管；铁标准溶液 10 μg/mL、邻二氮菲 0.15%、
-盐酸羟胺 10%、HAc-NaAc 缓冲溶液（pH 4.6）。
-【实验步骤】
-1. 标准曲线：分别移取铁标准溶液 0.0、1.0、2.0、4.0、6.0、8.0 mL 于 50 mL 容量瓶，
-   加还原剂、显色剂与缓冲液后定容，显色 10 min 后于 510 nm 测吸光度。
-2. 水样测定：取水样 25.0 mL 同法显色测定。
-3. 数据处理：以铁含量（μg）为横坐标、吸光度 A 为纵坐标绘制标准曲线，求回归方程，
-   计算水样中铁的含量（mg/L）。
-【报告要求】
-1. 报告须包含：实验目的、原理、仪器与试剂、实验步骤、数据记录、数据处理、结果与讨论、结论。
-2. 正文不少于 800 字，数据须列表记录并保留原始数据，图表须编号并在正文引用。
-3. 需计算相对误差与相对平均偏差，并讨论误差来源。
-4. 引用他人公式或数据须标注参考文献。
-【评分标准】格式规范 10 分 + 内容质量 70 分 = 100 分。"""
-
-SAMPLE_REPORT = """实验报告
-一、实验目的
-学会用分光光度计测铁的浓度。
-
-二、实验原理
-铁离子和邻二氮菲反应会变成橙红色，颜色越深说明铁越多，可以测吸光度来算浓度。
-
-三、仪器与试剂
-分光光度计一台，容量瓶几个，还有邻二氮菲和盐酸羟胺。
-
-四、实验步骤
-取标准溶液，加试剂，定容，放十分钟，然后测吸光度。水样也是一样做。
-
-五、数据记录
-标准曲线数据：
-0 mL：A=0.000
-1 mL：A=0.104
-2 mL：A=0.198
-4 mL：A=0.402
-6 mL：A=0.615
-8 mL：A=0.789
-水样：A=0.372（取水样25.0 mL）
-
-六、数据处理
-用excel作图得到直线的方程是 y=0.0996x+0.0021
-所以水样的铁含量是 0.372-0.0021=0.3699，0.3699/0.0996=3.71 ug
-换算成 mg/L 是 3.71/25=0.148 mg/L
-
-七、结果与讨论
-实验测出水样含铁 0.148 mg/L，符合生活饮用水卫生标准。颜色挺明显的，说明实验成功了。
-
-八、结论
-通过这次实验我学会了用分光光度计，掌握了邻二氮菲法，收获很大，以后要多做实验。
-
-（全文约 300 字）"""
+#
+#   samples.SAMPLES 里每一套示例包含：
+#       name     —— 下拉框显示的名称（含"正确范例 / 含典型错误 / 学术不端"标签）
+#       kind     —— good / bad / violation
+#       standard —— 该实验的指导书与评分标准
+#       report   —— 学生提交的报告原文
+#       note     —— 预埋了哪些问题、预期得分区间（显示在界面上帮助讲解）
+#
+#   其中 kind == "violation" 的那套会触发护栏熔断，用于演示"直接中断批阅"的机制。
 
 
 # ===========================================================================
@@ -1436,6 +1387,7 @@ def render_sidebar() -> Dict[str, Any]:
         st.caption(
             "模型：DeepSeek（OpenAI 兼容接口）\n\n"
             "智能体：护栏监督员 → 格式审查员 ‖ 内容评审员 → 评分与解释官\n\n"
+            f"内置示例：{len(SAMPLES)} 套（正确 / 含错 / 学术不端），在主界面顶部下拉选择\n\n"
             f"当前解释器：`{sys.executable}`"
         )
 
@@ -1533,6 +1485,50 @@ def main() -> None:
 
     params = render_sidebar()
 
+    # ---------- 示例库选择（先选案例，再一键填充） ----------
+    counts = count_by_kind()
+    st.markdown("#### 📚 示例库")
+    select_col, fill_col = st.columns([3, 2])
+
+    with select_col:
+        sample_index = st.selectbox(
+            "选择一套示例（指导书 + 学生报告），可一键填充到下方两个输入框",
+            options=list(range(len(SAMPLES))),
+            format_func=lambda i: SAMPLES[i]["name"],
+            index=0,
+            label_visibility="collapsed",
+        )
+
+    current_sample = get_sample(sample_index)
+
+    with fill_col:
+        btn1, btn2, btn3 = st.columns(3)
+        with btn1:
+            fill_standard = st.button("📋 填指导书", use_container_width=True,
+                                      help="只填充左侧的指导书/评分标准")
+        with btn2:
+            fill_report = st.button("📝 填报告", use_container_width=True,
+                                    help="只填充右侧的学生报告")
+        with btn3:
+            fill_both = st.button("⚡ 一键填充", type="primary", use_container_width=True,
+                                  help="两个输入框一起填充")
+
+    if fill_standard or fill_both:
+        st.session_state["standard_text"] = current_sample["standard"]
+    if fill_report or fill_both:
+        st.session_state["report_text"] = current_sample["report"]
+
+    # 显示当前案例的说明（预埋了哪些问题、预期得分），方便讲解与自测
+    st.info(
+        f"**{kind_label(current_sample['kind'])}**　|　{current_sample['note']}",
+        icon="🧭",
+    )
+    st.caption(
+        f"示例库共 {len(SAMPLES)} 套：✅ 正确范例 {counts.get('good', 0)} 套　·　"
+        f"❌ 含典型错误 {counts.get('bad', 0)} 套　·　"
+        f"🚨 学术不端（会触发护栏熔断）{counts.get('violation', 0)} 套"
+    )
+
     # ---------- 输入区 ----------
     col_left, col_right = st.columns(2)
 
@@ -1540,11 +1536,9 @@ def main() -> None:
         st.subheader("① 实验指导书 / 评分标准")
         # 注意：这里直接写 st.session_state["standard_text"]，Streamlit 会把它作为该组件的当前值，
         # 因此「填充示例」按钮只需改 session_state 即可生效（不需要再传 value 参数，避免冲突告警）。
-        if st.button("📋 填充示例指导书", use_container_width=True):
-            st.session_state["standard_text"] = SAMPLE_STANDARD
         standard = st.text_area(
             "粘贴实验指导书、实验要求或评分细则",
-            height=320,
+            height=340,
             key="standard_text",
             placeholder="例如：\n【实验目的】……\n【报告要求】正文不少于 800 字，图表须编号……\n【评分标准】格式 10 分 + 内容 70 分……",
             label_visibility="collapsed",
@@ -1552,11 +1546,9 @@ def main() -> None:
 
     with col_right:
         st.subheader("② 学生实验报告")
-        if st.button("📝 填充示例报告（含典型错误）", use_container_width=True):
-            st.session_state["report_text"] = SAMPLE_REPORT
         report = st.text_area(
             "粘贴学生提交的实验报告全文",
-            height=320,
+            height=340,
             key="report_text",
             placeholder="例如：\n一、实验目的……\n二、实验原理……\n三、数据记录……",
             label_visibility="collapsed",
