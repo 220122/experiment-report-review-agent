@@ -13,13 +13,14 @@
 实验报告批阅系统/
 ├── ① 首次安装（双击我）.bat      # 一键装环境：找 Python → 装依赖（清华/阿里镜像）→ 配 API Key → 自检
 ├── ② 启动项目（双击我）.bat      # 一键启动：自动找解释器 → 拉起服务 → 就绪后自动打开浏览器
-├── ③ 停止项目（双击我）.bat      # 一键停止：按窗口标题 + 端口 8501 清理监听进程
-├── ④ 推送到GitHub（双击我）.bat  # 一键推送：git init → add/commit → push（需先改脚本内的仓库地址）
+├── ③ 停止项目（双击我）.bat      # 一键停止：按窗口标题 + 端口 8501 精确结束监听进程
+├── ④ 推送到GitHub（双击我）.bat  # 一键推送：git init → add/commit → push（远端已配好 220122）
+├── GitHub私人仓库操作指南.md      # 建私人仓库 + 生成 Token 的图文步骤（做完可删）
 ├── app.py                        # 全部业务代码（智能体 + 流程编排 + 界面 + 渲染），单文件
 ├── launcher.py                   # 「② 启动项目」背后的启动引导器（依赖检查/开浏览器）
 ├── requirements.txt              # 依赖清单（实际上只有 streamlit 是必需的）
 ├── .env.example                  # API Key 配置模板（复制为 .env 后填写）
-├── .gitignore                    # 已屏蔽 .env、.venv、缓存等
+├── .gitignore / .gitattributes   # 屏蔽 .env/.venv/缓存；统一 bat 的 CRLF 换行
 ├── README.md                     # 本说明文件
 └── .streamlit/
     └── config.toml               # Streamlit 主题与运行参数（可选，不影响功能）
@@ -37,11 +38,10 @@
 | ③ 停止项目 | 用完后 | 先按窗口标题结束服务窗口，再按端口 `8501` 精确结束**监听**进程（不会误杀浏览器） |
 | ④ 推送到GitHub | 想上传代码时 | 检查 git → `git init`（首次）→ 配置远端 → 提交改动 → `git push`；失败时打印 4 条常见原因 |
 
-**双击 ④ 之前必须先改脚本开头的这一行：**
-
-```bat
-set "REMOTE=https://github.com/你的用户名/experiment-report-review-agent.git"
-```
+**推送目标（已按你的账号配置好）**：私人仓库
+`https://github.com/220122/experiment-report-review-agent`
+→ 首次推送前请先在 <https://github.com/new> 建好这个 **Private** 仓库，
+详细图文步骤见 `GitHub私人仓库操作指南.md`。
 
 想换端口，改这两个地方（保持一致即可）：`② 启动项目（双击我）.bat` 里 `launcher.py "实验报告批阅" 8501` 的最后一个参数。
 
