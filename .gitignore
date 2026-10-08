@@ -13,6 +13,9 @@ venv/
 .run_python.txt
 .run_port.txt
 .tmp/
+.tmp2/
+.server_out.log
+.server_err.log
 
 # 系统
 Thumbs.db

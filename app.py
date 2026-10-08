@@ -1585,14 +1585,24 @@ def main() -> None:
         )
         st.session_state["engine_name"] = engine.name
 
-        progress_box = st.status(f"🚀 多智能体流水线已启动……（调用引擎：{engine.name}）", expanded=True)
-        if engine_notice:
-            progress_box.write(f"ℹ️ {engine_notice}")
-        log_lines: List[str] = []
+        # ---------- 进度区 ----------
+        # 说明：这里刻意**不用** st.status。
+        # st.status 在部分 Streamlit 版本（含 1.37）上会在标题旁多渲染一个图标元素，
+        # 与标签文字挤在一起造成"检查✅ 批阅完成"这类重叠。
+        # 改用 st.expander + st.empty() 占位符，兼容性更好、显示更干净。
+        progress_label = st.empty()
+        progress_label.info(f"🔄 批阅中…（调用引擎：{engine.name}）　请勿关闭页面")
+
+        with st.expander("📋 查看流水线日志", expanded=True):
+            progress_log = st.empty()
+            log_lines: List[str] = []
+            if engine_notice:
+                log_lines.append(f"ℹ️ {engine_notice}")
+                progress_log.markdown("\n\n".join(log_lines))
 
         def on_progress(message: str) -> None:
             log_lines.append(message)
-            progress_box.write(message)
+            progress_log.markdown("\n\n".join(log_lines))
 
         try:
             with st.spinner("智能体正在协作批阅，请稍候……（首次调用约需 30~90 秒）"):
@@ -1608,14 +1618,14 @@ def main() -> None:
                 )
             st.session_state["result"] = result
             if result.get("status") == "blocked":
-                progress_box.update(label="⛔ 护栏熔断，批阅已中断", state="error", expanded=True)
+                progress_label.error("⛔ 护栏熔断：检测到学术不端风险，批阅已中断（详见下方护栏检查结果）")
             elif result.get("status") == "error":
-                progress_box.update(label="❌ 批阅出错", state="error", expanded=True)
+                progress_label.error(f"❌ 批阅出错：{result.get('error') or '未知错误'}")
             else:
-                progress_box.update(label="✅ 批阅完成", state="complete", expanded=False)
+                progress_label.success(f"✅ 批阅完成（调用引擎：{engine.name}）")
         except Exception as exc:  # noqa: BLE001 —— 界面上给出明确错误而不是白屏
             st.session_state["result"] = None
-            progress_box.update(label="❌ 调用失败", state="error", expanded=True)
+            progress_label.error(f"❌ 调用失败：{type(exc).__name__}: {exc}")
             st.error(f"调用大模型失败：{type(exc).__name__}: {exc}", icon="❌")
             with st.expander("常见问题排查"):
                 st.markdown(
