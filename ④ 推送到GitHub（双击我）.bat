@@ -101,10 +101,30 @@ echo ------------------------------------------------------------
 echo.
 pause
 echo.
-echo   正在推送 ...
+
+echo ------------------------------------------------------------
+echo  [自测] 检查 TLS 后端与仓库连通性 ...
+for /f "delims=" %%s in ('git config --get http.sslBackend') do echo      仓库级 TLS 后端: %%s
+git -c http.sslBackend=openssl -c credential.helper= ls-remote --heads origin 2>tls_probe.txt
+findstr /i /c:"schannel" /c:"SEC_E" /c:"unable to access" tls_probe.txt >nul 2>&1
+if not errorlevel 1 (
+    echo      [X] TLS 握手失败，git 无法建立 HTTPS 连接
+    echo          请打开「Git Bash」执行下面这行做永久修复，然后重新双击本脚本：
+    echo              git config --global http.sslBackend openssl
+) else (
+    echo      [√] TLS 与网络正常（提示需要用户名属正常：私人仓库必须认证）
+)
+del tls_probe.txt >nul 2>&1
+
+echo ------------------------------------------------------------
+echo.
+goto push_now
 echo.
 
-git push -u origin %BRANCH%
+:push_now
+echo   正在推送 ...
+echo.
+git -c http.sslBackend=openssl push -u origin %BRANCH%
 if errorlevel 1 (
     echo.
     echo ============================================================
@@ -116,7 +136,11 @@ if errorlevel 1 (
     echo      不要勾选 Add a README file / .gitignore / license
     echo   2. 未登录 / Token 失效：重新推送并按提示登录 220122
     echo   3. 远端已有内容导致冲突：先执行 git pull --rebase origin %BRANCH%
-    echo   4. 网络问题：可执行 git config --global http.proxy 配置代理后重试
+    echo   4. 若报错包含 "schannel" / "SEC_E_NO_CREDENTIALS" / "unable to access"：
+    echo      说明 git 的 Windows TLS 后端有问题。本脚本已自动改用 OpenSSL 后端；
+    echo      若仍失败，请打开「Git Bash」执行下面这行做永久修复：
+    echo          git config --global http.sslBackend openssl
+    echo   5. 网络问题：可执行 git config --global http.proxy 配置代理后重试
     echo ============================================================
     echo.
     pause

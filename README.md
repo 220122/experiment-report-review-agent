@@ -39,10 +39,10 @@
 | ③ 停止项目 | 用完后 | 先按窗口标题结束服务窗口，再按端口 `8501` 精确结束**监听**进程（不会误杀浏览器） |
 | ④ 推送到GitHub | 想上传代码时 | 检查 git → `git init`（首次）→ 配置远端 → 提交改动 → `git push`；失败时打印 4 条常见原因 |
 
-**推送目标（已按你的账号配置好）**：私人仓库
-`https://github.com/220122/experiment-report-review-agent`
-→ 首次推送前请先在 <https://github.com/new> 建好这个 **Private** 仓库，
-详细图文步骤见 `GitHub私人仓库操作指南.md`。
+**推送目标（已建好并已推送）**：私人仓库
+<https://github.com/220122/experiment-report-review-agent>（Private，默认分支 `main`）。
+以后再改代码，只需双击 `④ 推送到GitHub（双击我）.bat`；
+若遇到 `schannel` / `SEC_E_NO_CREDENTIALS` 报错，见 `GitHub私人仓库操作指南.md` 的修复方法。
 
 想换端口，改这两个地方（保持一致即可）：`② 启动项目（双击我）.bat` 里 `launcher.py "实验报告批阅" 8501` 的最后一个参数。
 
