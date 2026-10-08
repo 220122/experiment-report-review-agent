@@ -1,0 +1,11 @@
+[theme]
+# 让中文界面更清爽
+base = "light"
+primaryColor = "#1f6feb"
+
+[server]
+# 单文件应用，关闭使用统计与文件监视可以少占资源
+headless = true
+
+[browser]
+gatherUsageStats = false

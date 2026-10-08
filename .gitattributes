@@ -1,0 +1,13 @@
+# 统一换行符，避免 Windows 上双击 bat 出问题
+*.bat text eol=crlf
+*.py text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.toml text eol=lf
+*.json text eol=lf
+
+# 二进制
+*.png binary
+*.jpg binary
+*.docx binary
+*.pdf binary

@@ -1,0 +1,21 @@
+# 实验报告批阅多智能体系统 —— Python 依赖
+#
+# 重要说明：本项目只需要 Streamlit 一个第三方库就能跑起来。
+#   模型调用层做了「双引擎」设计：
+#     · 首选 openai 官方 SDK（可选）
+#     · 缺失时自动降级为 httpx / Python 标准库（本项目自带，无需安装）
+#   所以即使电脑上装不上 openai，应用也能完整运行。
+#
+# 安装命令（国内推荐用清华镜像，速度最快）：
+#   pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+#
+# 如果 pip 因为网络/权限装不了包，而你本机已有 Streamlit，可直接跳到"启动"一步。
+
+# —— 必需：网页界面框架（自带 Web 服务器，无需额外配置）——
+streamlit>=1.30,<2.0
+
+# —— 可选：DeepSeek 的 OpenAI 官方 SDK。装了就用它，没装自动走 httpx/标准库 ——
+openai>=1.30,<2.0
+
+# —— 可选：更稳的 HTTP 客户端。Anaconda 自带；纯 Python 环境没装也能用标准库兜底 ——
+httpx>=0.24
