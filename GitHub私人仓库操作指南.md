@@ -7,8 +7,7 @@
 | 仓库地址 | <https://github.com/220122/experiment-report-review-agent> |
 | 可见性 | **Private（私人）** ✅ |
 | 默认分支 | `main` |
-| 已推送提交 | 5 个（含建库时的全部历史） |
-| 远端文件 | 14 个（`app.py` / `samples.py` / `launcher.py` / `README.md` / 3 个 py 配置 / 4 个 bat / 1 份指南） |
+| 远端文件 | 13 个（`app.py` / `samples.py` / `launcher.py` / `README.md` / 配置 / 3 个 bat / 本指南） |
 | `.env` 是否泄露 | ❌ 未上传（已被 `.gitignore` 排除）✅ |
 
 **首次推送已于 2026-10-08 完成**，你不需要再手动建库。
@@ -17,20 +16,19 @@
 
 ## 二、以后怎么更新代码
 
-改完代码后，双击项目目录下的：
+在项目目录 `E:\DSH\tr agengt` 里执行三条命令即可：
 
+```bash
+git add -A
+git commit -m "你的说明"
+git push
 ```
-④ 推送到GitHub（双击我）.bat
-```
 
-脚本会自动：`git add -A` → `git commit` → TLS 自测 → `git push`。
+> 原先提供的一键推送脚本 `④ 推送到GitHub（双击我）.bat` 已按需求删除，
+> 现在统一用上面的命令行方式（或者用任何 Git 客户端，如 VS Code、GitHub Desktop）。
 
-> 如果只想用命令行，等价于：
-> ```bash
-> git add -A
-> git commit -m "你的说明"
-> git push
-> ```
+> 若 `git push` 报 `schannel` / `SEC_E_NO_CREDENTIALS`，先执行一次：
+> `git config --global http.sslBackend openssl`（详见第三节）。
 
 ---
 
@@ -50,14 +48,10 @@ schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS
    ```bash
    git config http.sslBackend openssl
    ```
-2. **写进 ④ 脚本**：推送时统一带 `-c http.sslBackend=openssl`，
-   并在推送前做一次 TLS 自测，发现 `schannel`/`SEC_E` 错误就提示你如何永久修复。
-
-如果想对**所有** git 仓库生效，打开「Git Bash」执行一次：
-
-```bash
-git config --global http.sslBackend openssl
-```
+2. **本机如需全局生效**，打开「Git Bash」执行一次：
+   ```bash
+   git config --global http.sslBackend openssl
+   ```
 
 ---
 

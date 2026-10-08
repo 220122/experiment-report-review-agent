@@ -14,8 +14,7 @@
 ├── ① 首次安装（双击我）.bat      # 一键装环境：找 Python → 装依赖（清华/阿里镜像）→ 配 API Key → 自检
 ├── ② 启动项目（双击我）.bat      # 一键启动：自动找解释器 → 拉起服务 → 就绪后自动打开浏览器
 ├── ③ 停止项目（双击我）.bat      # 一键停止：按窗口标题 + 端口 8501 精确结束监听进程
-├── ④ 推送到GitHub（双击我）.bat  # 一键推送：git init → add/commit → push（远端已配好 220122）
-├── GitHub私人仓库操作指南.md      # 建私人仓库 + 生成 Token 的图文步骤（做完可删）
+├── GitHub私人仓库操作指南.md      # 仓库地址、TLS 修复、推送与报错速查
 ├── app.py                        # 全部业务代码（智能体 + 流程编排 + 界面 + 渲染），单文件
 ├── samples.py                    # 示例库：6 套「指导书 + 学生报告」（正确 / 含错 / 学术不端）
 ├── launcher.py                   # 「② 启动项目」背后的启动引导器（依赖检查/开浏览器）
@@ -30,19 +29,26 @@
 > 脚本运行时会生成两个缓存文件，可随时删除（已加入 .gitignore）：
 > `.run_python.txt`（记住用哪个 Python）、`.run_port.txt`（记住端口）。
 
-### 四个 bat 脚本怎么用（Windows 用户看这里）
+### 三个 bat 脚本怎么用（Windows 用户看这里）
 
 | 脚本 | 什么时候双击 | 它会做什么 |
 |---|---|---|
 | ① 首次安装 | **只需一次** | 自动搜索本机 Python（PATH / py 启动器 / Anaconda / 常见安装路径）→ 检查 Streamlit，缺了就用清华镜像装、失败自动换阿里云镜像 → 生成 `.env` 并打开记事本让你填 API Key → 最后打印环境自检结果 |
 | ② 启动项目 | 每次使用 | 复用 ① 记住的解释器 → 检查依赖 → 打印日志并启动服务 → 轮询健康检查，就绪后**自动打开浏览器** |
 | ③ 停止项目 | 用完后 | 先按窗口标题结束服务窗口，再按端口 `8501` 精确结束**监听**进程（不会误杀浏览器） |
-| ④ 推送到GitHub | 想上传代码时 | 检查 git → `git init`（首次）→ 配置远端 → 提交改动 → `git push`；失败时打印 4 条常见原因 |
 
-**推送目标（已建好并已推送）**：私人仓库
+**代码仓库（已建好并已推送）**：私人仓库
 <https://github.com/220122/experiment-report-review-agent>（Private，默认分支 `main`）。
-以后再改代码，只需双击 `④ 推送到GitHub（双击我）.bat`；
-若遇到 `schannel` / `SEC_E_NO_CREDENTIALS` 报错，见 `GitHub私人仓库操作指南.md` 的修复方法。
+以后改完代码想上传，用命令行推送即可：
+
+```bash
+git add -A
+git commit -m "你的说明"
+git push
+```
+
+> 若 push 时报 `schannel` / `SEC_E_NO_CREDENTIALS`，先执行一次
+> `git config --global http.sslBackend openssl`，详见 `GitHub私人仓库操作指南.md`。
 
 想换端口，改这两个地方（保持一致即可）：`② 启动项目（双击我）.bat` 里 `launcher.py "实验报告批阅" 8501` 的最后一个参数。
 
@@ -93,7 +99,8 @@
 2. 双击 **`② 启动项目（双击我）.bat`** → 浏览器自动打开 <http://localhost:8501>
 3. 用完后双击 **`③ 停止项目（双击我）.bat`**
 
-想上传到 GitHub：改好 `④ 推送到GitHub（双击我）.bat` 里的仓库地址后双击它。
+想上传到 GitHub：在项目目录里执行 `git add -A` → `git commit -m "说明"` → `git push`
+（远端已配置为 <https://github.com/220122/experiment-report-review-agent>，TLS 修复见 `GitHub私人仓库操作指南.md`）。
 
 下面是手动命令行的步骤，macOS / Linux 用户或想自己排查问题时用。
 
